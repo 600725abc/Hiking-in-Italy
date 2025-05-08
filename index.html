@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolomites Hiking Guide: Sesto & Tre Cime</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #005A9C; /* Dolomite Blue */
+            --secondary-color: #4CAF50; /* Alpine Green */
+            --accent-color: #FFC107; /* Sunny Yellow */
+            --text-color: #333;
+            --light-gray: #f4f4f4;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #666;
+            --card-bg: #fff;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5em 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header p {
+            margin: 0.2em 0 0;
+            font-size: 1.1em;
+        }
+
+        #main-nav {
+            background-color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0.5em 1em;
+        }
+        
+        #main-nav .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #main-nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        #main-nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 0.8em 1.2em;
+            display: block;
+            transition: background-color 0.3s ease;
+            font-weight: 500;
+        }
+
+        #main-nav ul li a:hover, #main-nav ul li a.active {
+            background-color: var(--primary-color);
+        }
+        
+        #nav-toggle {
+            display: none; 
+            color: white;
+            font-size: 1.5em;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        #export-options {
+            background-color: var(--medium-gray);
+            padding: 0.8em 1em;
+            text-align: center;
+            border-bottom: 1px solid var(--dark-gray);
+        }
+
+        #export-options button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 0.6em 1.2em;
+            margin: 0 0.5em;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        #export-options button:hover {
+            background-color: #388E3C; /* Darker Green */
+        }
+        #export-options button i {
+            margin-right: 0.5em;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2em auto;
+            padding: 0 1em;
+        }
+
+        section {
+            background-color: var(--card-bg);
+            margin-bottom: 2em;
+            padding: 1.5em;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        section h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5em;
+            margin-top: 0;
+        }
+        
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 1.5em;
+        }
+
+        .hike-card {
+            background-color: #fdfdfd;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5em;
+            padding: 1em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .hike-card h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .hike-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1em;
+            margin: 0.8em 0;
+            padding: 0.8em;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+        }
+
+        .hike-stats span {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+
+        .hike-stats i {
+            margin-right: 0.5em;
+            color: var(--secondary-color);
+            width: 20px; 
+            text-align: center;
+        }
+        
+        .hike-stats .value {
+            font-weight: bold;
+        }
+
+        .accordion-button {
+            background-color: var(--medium-gray);
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 1em;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: background-color 0.3s ease;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-top: 0.5em;
+        }
+
+        .accordion-button:hover, .accordion-button.active {
+            background-color: var(--dark-gray);
+            color: white;
+        }
+        
+        .accordion-button::after {
+            content: '\f078'; 
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            float: right;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-button.active::after {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            border: 1px solid var(--medium-gray);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+        }
+        
+        .accordion-content ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        
+        .accordion-content li {
+            margin-bottom: 0.5em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+        }
+
+        th, td {
+            border: 1px solid var(--medium-gray);
+            padding: 0.8em;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+        
+        .note-ref {
+            font-size: 0.7em;
+            vertical-align: super;
+            color: var(--accent-color);
+            font-weight: bold;
+            cursor: help;
+            border: 1px solid var(--accent-color);
+            border-radius: 3px;
+            padding: 1px 3px;
+            text-decoration: none;
+        }
+        
+        .gpx-link {
+            display: inline-block;
+            margin: 0.5em 0;
+            padding: 0.5em 1em;
+            background-color: var(--secondary-color);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .gpx-link:hover {
+            background-color: #388E3C; 
+        }
+        .gpx-link i {
+            margin-right: 0.5em;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+        }
+        #loading-overlay i {
+            font-size: 3em;
+            margin-bottom: 0.5em;
+            animation: spin 2s linear infinite;
+        }
+        #loading-overlay p {
+            font-size: 1.2em;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        footer {
+            text-align: center;
+            padding: 1.5em 0;
+            background-color: #333;
+            color: white;
+            margin-top: 2em;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            #main-nav ul {
+                display: none; 
+                flex-direction: column;
+                width: 100%;
+                background-color: #444; 
+                position: absolute;
+                top: 100%; 
+                left: 0;
+            }
+
+            #main-nav ul.active {
+                display: flex; 
+            }
+
+            #main-nav ul li {
+                width: 100%;
+                text-align: center;
+            }
+            
+            #main-nav ul li a {
+                padding: 1em;
+                border-bottom: 1px solid #555;
+            }
+            
+            #main-nav ul li:last-child a {
+                border-bottom: none;
+            }
+
+            #nav-toggle {
+                display: block; 
+            }
+
+            .hike-stats {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .hike-stats span {
+                 width: 100%; 
+            }
+             #export-options button {
+                margin: 0.3em; /* More spacing on mobile */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <i class="fas fa-spinner"></i>
+        <p>Processing...</p>
+    </div>
+
+    <header>
+        <h1>Dolomites Hiking Guide</h1>
+        <p>Exploring Sesto (Sexten), San Candido, and the Tre Cime di Lavaredo Area</p>
+    </header>
+
+    <nav id="main-nav">
+        <div class="nav-container">
+            <span style="color: white; font-size: 1.2em; font-weight: bold;">Menu</span>
+            <button id="nav-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul>
+                <li><a href="#tre-cime-main">Tre Cime di Lavaredo Loop</a></li>
+                <li><a href="#other-tre-cime-hikes">Other Tre Cime Hikes</a></li>
+                <li><a href="#sesto-hikes">Hikes from Sesto</a></li>
+                <li><a href="#gpx-resources">GPX & Navigation</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="export-options">
+        <button id="downloadPdfBtn"><i class="fas fa-file-pdf"></i> Download as PDF</button>
+        <button id="downloadJpgBtn"><i class="fas fa-file-image"></i> Download as JPG</button>
+    </div>
+
+    <main id="main-content-area">
+        <section id="introduction">
+            <h2>Welcome to the Dolomites!</h2>
+            <p>This guide focuses on hiking trails around Sesto (Sexten), San Candido, and the iconic Tre Cime di Lavaredo (Three Peaks) area. Discover well-marked routes offering spectacular views and unforgettable experiences in this UNESCO World Heritage site. The best trails to travel from Sesto to the Tre Cime area focus on the iconic Tre Cime di Lavaredo circuit and its access routes.</p>
+            <p>Traveler's notes or references from the source document are indicated like this: <sup class="note-ref" title="Ref: example123">Ref</sup>. Hover over them for the reference ID.</p>
+        </section>
+
+        <section id="tre-cime-main">
+            <h2>Tre Cime di Lavaredo Loop & Views</h2>
+            
+            <div class="hike-card">
+                <h4>1. Classic Tre Cime di Lavaredo Loop (Starting near Rifugio Auronzo)</h4>
+                <div class="hike-stats">
+                    <span><i class="fas fa-route"></i> Distance: <span class="value">~9.5 - 10 km</span></span>
+                    <span><i class="fas fa-clock"></i> Duration: <span class="value">4 - 5 hours</span></span>
+                    <span><i class="fas fa-mountain"></i> Elevation Gain: <span class="value">~400 m</span></span>
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Moderate</span></span>
+                </div>
+                <p><strong>Trail Description:</strong> The loop trail circles the three famous peaks—Cima Grande, Cima Ovest, and Cima Piccola. Moderately difficult with some steep ascents but mostly well-maintained, suitable for hikers with moderate fitness.</p>
+                <p><strong>Access:</strong> From Sesto, reach Rifugio Auronzo (2320 m) by car or shuttle bus via a toll road. Rifugio Auronzo is the usual trailhead.</p>
+                
+                <button class="accordion-button">Highlights & Detours</button>
+                <div class="accordion-content">
+                    <p><strong>Highlights:</strong> Panoramic views of the Three Peaks, Forcella Lavaredo (famous photo spot), Rifugio Locatelli with its terrace views, and the alpine lakes Laghi dei Piani nearby.</p>
+                    <p><strong>Optional Detours:</strong></p>
+                    <ul>
+                        <li>A short steep trail to Rifugio Locatelli (Drei Zinnen Hütte) for excellent views and refreshments.</li>
+                        <li>From Rifugio Locatelli, an optional 2 km out-and-back hike to the Laghi dei Piani alpine lakes.</li>
+                        <li>A short climb to Sasso di Sesto (Sextenstein) near the chapel for panoramic views.</li>
+                    </ul>
+                </div>
+
+                <button class="accordion-button">Detailed Route Segments (Counterclockwise)</button>
+                <div class="accordion-content">
+                    <p><strong>Trailhead:</strong> Rifugio Auronzo (2,320 m). Trail Numbers: Main loop follows trail #101 and #105 in parts.</p>
+                    <ol>
+                        <li><strong>Rifugio Auronzo to Rifugio Lavaredo (2,344 m):</strong> ~1.7 km, 30-40 mins. Slight ascent. Pass Cappella degli Alpini.</li>
+                        <li><strong>Rifugio Lavaredo to Forcella Lavaredo (2,454 m):</strong> ~2.2 km, 40 mins. Moderate ascent. Best viewpoint of Tre Cime.</li>
+                        <li><strong>Forcella Lavaredo to Rifugio Locatelli (Drei Zinnen Hütte) (2,405 m):</strong> ~2.2 km, 40 mins. Slight descent. Near Drei Zinnen caves.</li>
+                        <li><strong>Rifugio Locatelli to Malga Langalm (2,232 m) via Forcella del Col de Mezzo (2,254 m):</strong> ~3.6 km, 1.5 hours. Mostly descent/flat. Alpine meadows.</li>
+                        <li><strong>Malga Langalm back to Rifugio Auronzo parking area:</strong> ~2.6 km, 45 mins. Gentle ascent. Completes the loop.</li>
+                    </ol>
+                    <p><strong>Total Distance (Detailed):</strong> About 9.7 to 10 km (6 miles)</p>
+                    <p><strong>Elevation Gain (Detailed):</strong> Approximately 340–400 meters cumulative ascent/descent.</p>
+                    <p><strong>Duration (Detailed):</strong> 3.5 to 5 hours including breaks and photo stops.</p>
+                    <p><strong>Season:</strong> Best hiked from mid-June to mid-September.</p>
+                    <p><strong>Note:</strong> The trail is well marked and very popular, so starting early helps avoid crowds <sup class="note-ref" title="Ref: crowds14567">Ref</sup>. This detailed route offers a classic, manageable, and highly scenic hike around the Tre Cime di Lavaredo, showcasing the best viewpoints, mountain huts, and alpine landscapes of the Dolomites <sup class="note-ref" title="Ref: Dolomites13456">Ref</sup>.</p>
+                </div>
+
+                <button class="accordion-button">Route Modifications Starting from Sesto (Sexten)</button>
+                <div class="accordion-content">
+                    <p>If starting your hike from Sesto rather than Rifugio Auronzo, you will begin with a longer approach.</p>
+                    <p><strong>1. Hiking from Sesto Valley (Val Fiscalina) to Tre Cime Area:</strong></p>
+                    <ul>
+                        <li><strong>Approach:</strong> From Sesto (approx. 1,310 m), hike up Val Fiscalina.</li>
+                        <li><strong>Distance & Elevation to join loop:</strong> About 6-7 km with roughly 1,000 m elevation gain, taking 2.5-3.5 hours.</li>
+                        <li><strong>Trail:</strong> Follow well-marked trails (e.g., trail no. 105) through forest and alpine meadows, passing Rifugio Fondovalle (1,548 m) and Rifugio Malga Sasso (1,936 m).</li>
+                        <li><strong>Joining the Loop:</strong> You eventually reach the Forcella Lavaredo or Rifugio Locatelli area, connecting with the classic Tre Cime loop trail (trail no. 101 and 105). This is more challenging and recommended for experienced hikers.</li>
+                    </ul>
+                    <p><strong>Detailed Modified Route Steps from Sesto (Val Fiscalina):</strong></p>
+                    <ol>
+                        <li><strong>Sesto to Rifugio Fondovalle (1,548 m):</strong> Approx. 3.5 km, 1.5 hours. Gradual ascent.</li>
+                        <li><strong>Rifugio Fondovalle to Rifugio Malga Sasso (1,936 m):</strong> Approx. 2.5 km, 1 hour. Steeper ascent.</li>
+                        <li><strong>Rifugio Malga Sasso to Forcella Lavaredo / Rifugio Locatelli:</strong> Approx. 3 km, 1.5 hours. Significant climb, connects to Tre Cime loop trail.</li>
+                        <li><strong>Complete the Tre Cime Loop:</strong> Approx. 9.7 km, 3.5-4 hours (as described above).</li>
+                    </ol>
+                    <p><strong>2. Partial Drive or Shuttle + Hike:</strong></p>
+                    <p>Many hikers from Sesto drive or take a shuttle bus partway up the toll road to Rifugio Auronzo (2,320 m), the usual trailhead. This significantly reduces total hiking distance and elevation gain.</p>
+                    <p><strong>Additional Tips for starting from Sesto:</strong></p>
+                    <ul>
+                        <li><strong>Timing:</strong> Starting from Sesto adds about 3-4 hours of hiking *before* the loop, so plan a full day.</li>
+                        <li><strong>Transport:</strong> Consider shuttle buses or taxis to Rifugio Auronzo to shorten the hike.</li>
+                        <li><strong>Alternative Parking:</strong> Some hikers park at the Val Fiscalina parking area (near Rifugio Fondovalle) to reduce the initial ascent from Sesto town.</li>
+                    </ul>
+                </div>
+
+                <button class="accordion-button">Best Viewpoints of Tre Cime di Lavaredo</button>
+                <div class="accordion-content">
+                    <ul>
+                        <li><strong>Tre Cime di Lavaredo Loop Trail (Counterclockwise):</strong> Offers gradual reveal and dramatic views approaching Forcella Lavaredo and Rifugio Locatelli.</li>
+                        <li><strong>Forcella Lavaredo Viewpoint:</strong> Accessible, iconic, photographed views. Path 101 from Rifugio Auronzo.</li>
+                        <li><strong>Rifugio Locatelli (Dreizinnenhütte) & Surrounding Area:</strong> Strategically positioned for head-on views of the north faces. Includes Chiesetta Alpina and Drei Zinnen caves.</li>
+                        <li><strong>Mirante do Vale dos Tres Picos de Lavaredo:</strong> Short detour beyond Cappella degli Alpini for a unique angle.</li>
+                        <li><strong>Malga Langalm Section:</strong> Tranquil, pastoral setting with sweeping views from a distance.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="other-tre-cime-hikes">
+            <h2>Other Hikes in/to Tre Cime Area</h2>
+
+            <div class="hike-card">
+                <h4>2. Tre Scarperi (Dreischusterspitze) Circuit</h4>
+                <div class="hike-stats">
+                    <span><i class="fas fa-route"></i> Distance: <span class="value">~14.6 km</span></span>
+                    <span><i class="fas fa-clock"></i> Duration: <span class="value">6 - 7 hours</span></span>
+                    <span><i class="fas fa-mountain"></i> Elevation Gain: <span class="value">~1,000 m</span></span>
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Challenging</span></span>
+                </div>
+                <p><strong>Description:</strong> A U-shaped hike starting in the Campo Di Dentro valley, climbing to Rifugio Locatelli, then descending through Sassovecchio Valley and ending in the Fiscalina Valley. Covers diverse terrain in Tre Cime Nature Park.</p>
+                <p><strong>Best for:</strong> Experienced hikers seeking a longer, more varied trek with fewer crowds <sup class="note-ref" title="Ref: crowds6">Ref</sup>.</p>
+            </div>
+
+            <div class="hike-card">
+                <h4>3. Sentiero Dei Camiosci (Family-Friendly Option)</h4>
+                <div class="hike-stats">
+                    <span><i class="fas fa-route"></i> Distance: <span class="value">~4.8 km</span></span>
+                    <span><i class="fas fa-clock"></i> Duration: <span class="value">1.5 - 2.5 hours</span></span>
+                    <span><i class="fas fa-mountain"></i> Elevation Gain: <span class="value">~344 m</span></span>
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Easy/Family Friendly</span></span>
+                </div>
+                <p><strong>Description:</strong> Starts from the Rotwandwiese alpine plateau near the Croda Rossa gondola. Offers beautiful views of Monte Croda Rossa. Suitable for families and less experienced hikers.</p>
+                <p><strong>Note:</strong> While not a direct Sesto to Tre Cime route, it is a pleasant nearby hike in the same region <sup class="note-ref" title="Ref: region6">Ref</sup>.</p>
+            </div>
+
+            <div class="hike-card">
+                <h4>4. San Candido to Rifugio Locatelli (Alta Via 4 - Day 1)</h4>
+                 <div class="hike-stats">
+                    <span><i class="fas fa-route"></i> Distance: <span class="value">14.2 km / 9 miles</span></span>
+                    <span><i class="fas fa-clock"></i> Walking Time: <span class="value">4h 30min</span></span>
+                    <span><i class="fas fa-mountain"></i> Elevation Gain: <span class="value">1220 m / 4000 feet</span></span>
+                    <span><i class="fas fa-sort-amount-down"></i> Elevation Loss: <span class="value">120 m / 394 feet</span></span>
+                </div>
+                <p><strong>Path Number:</strong> 105.</p>
+                <p><strong>Start:</strong> Alte Säge restaurant (bus stop for San Candido/Sesto).</p>
+                <p><strong>Description:</strong> First part to Rifugio Tre Scarperi (approx. 6km, 370m rise, ~90 mins) is a good warm-up through forest. After lunch at Tre Scarperi (optional), continue onward to Rifugio Locatelli, with the path splitting and ascending after Mount Mattina.</p>
+                <p><strong>Overnight:</strong> Rifugio Locatelli is one of the busiest huts; booking months in advance is essential.</p>
+            </div>
+        </section>
+
+        <section id="sesto-hikes">
+            <h2>Recommended Trails Starting from Sesto (Sexten)</h2>
+            <p>Sesto (Sexten) is an excellent starting point for exploring the Dolomites, offering trails for different skill levels.</p>
+
+            <div class="hike-card">
+                <h4>1. Val Fiscalina (Fischleintal) Valley Trail</h4>
+                <div class="hike-stats">
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Easy to Moderate</span></span>
+                </div>
+                <p><strong>Description:</strong> A beautiful, relatively gentle valley hike starting directly from Sesto, following the lush Val Fiscalina. Passes through larch forests, alpine meadows, and huts like Rifugio Piano Fiscalino (Fischleinbodenhütte).</p>
+                <p><strong>Highlights:</strong> Stunning views of Sesto Sundial peaks, peaceful nature.</p>
+                <p><strong>Details:</strong> From Croda Rossa/Rotwand cable car parking near Sesto, cross Rio Fiscalino stream, follow trail 102 to Rifugio Piano Fiscalino (~30 mins). Continue deeper towards Tre Cime area or explore pastures <sup class="note-ref" title="Ref: pastures136">Ref</sup>.</p>
+                 <p class="note-source">Source reference: <sup class="note-ref" title="Ref: turn0search6">Ref</sup></p>
+            </div>
+
+            <div class="hike-card">
+                <h4>2. Hike to Sasso di Sesto (Sextenstein)</h4>
+                 <div class="hike-stats">
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Moderate</span></span>
+                </div>
+                <p><strong>Description:</strong> A rewarding short hike to the summit of Sasso di Sesto, a small peak offering one of the finest viewpoints of Tre Cime di Lavaredo and surrounding Dolomites.</p>
+                <p><strong>Highlights:</strong> Panoramic views of Three Peaks and distant snowcapped mountains <sup class="note-ref" title="Ref: experience2">Ref</sup>.</p>
+            </div>
+
+            <div class="hike-card">
+                <h4>3. Croda Rossa Meadows and Passo Monte Croce/Kreuzbergpass Trail</h4>
+                <div class="hike-stats">
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Moderate</span></span>
+                     <span><i class="fas fa-clock"></i> Duration: <span class="value">2-3 hours</span></span>
+                </div>
+                <p><strong>Description:</strong> Starting from Croda Rossa/Rotwand meadows, hike along trails 15/15a at the base of Sesto mountains to Passo Monte Croce/Kreuzbergpass. Varied terrain: forests, meadows, mountain slopes.</p>
+                <p><strong>Return:</strong> Bus line 446 back to Val Fiscalina/Fischleintal to complete loop <sup class="note-ref" title="Ref: loop3">Ref</sup>.</p>
+            </div>
+
+            <div class="hike-card">
+                <h4>4. Alpine Pastures and Forest Walks Around Sesto</h4>
+                <div class="hike-stats">
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Easy to Moderate</span></span>
+                     <span><i class="fas fa-clock"></i> Duration: <span class="value">1-3 hours</span></span>
+                </div>
+                <p><strong>Description:</strong> Several easy walks explore alpine pastures, forests, historic sites around Sesto and Moso (e.g., walk to Malga Klammbach, Forest Chapel trail). Suitable for families, gentler hikes <sup class="note-ref" title="Ref: Dolomites145">Ref</sup>.</p>
+            </div>
+            
+            <div class="hike-card">
+                <h4>5. Longer Hikes Connecting to Tre Cime di Lavaredo from Sesto</h4>
+                 <div class="hike-stats">
+                     <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Challenging</span></span>
+                     <span><i class="fas fa-clock"></i> Duration to Rifugio Locatelli: <span class="value">3-4 hours</span></span>
+                </div>
+                <p><strong>Description:</strong> For experienced hikers, start from Sesto and hike up Val Fiscalina (about 6-7 km, 1,000 m elevation gain) to reach Tre Cime area near Rifugio Locatelli or Forcella Lavaredo, joining the classic Tre Cime circuit. A full-day hike offering a quieter, immersive experience <sup class="note-ref" title="Ref: Auronzo168">Ref</sup>.</p>
+            </div>
+            
+            <div class="hike-card">
+                <h4>6. Three Peaks Circuit (Starting from Sesto)</h4>
+                <p><strong>Description:</strong> A full-day hike starting from Sesto, passing through Zsigmondy Comici, Büllelejoch, and Locatelli huts, offering panoramic views of the iconic Tre Cime di Lavaredo.</p>
+                <p class="note-source">Source reference: <sup class="note-ref" title="Ref: turn0search10">Ref</sup></p>
+            </div>
+
+            <div class="hike-card">
+                <h4>7. Three Alpine Pastures Trail (from Sesto)</h4>
+                 <div class="hike-stats">
+                     <span><i class="fas fa-clock"></i> Duration: <span class="value">6-7 hours</span></span>
+                      <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Moderate</span></span>
+                </div>
+                <p><strong>Description:</strong> A moderate 6-7 hour hike connecting Froneben, Klammbach, and Nemesalp huts, traversing lush meadows and offering serene landscapes.</p>
+                <p class="note-source">Source reference: <sup class="note-ref" title="Ref: turn0search8">Ref</sup> | More info: <a href="https://berghotel.com" target="_blank" rel="noopener">berghotel.com</a></p>
+            </div>
+
+            <div class="hike-card">
+                <h4>8. Via Consideration Trail (Chapel in the Woods Loop)</h4>
+                <div class="hike-stats">
+                    <span><i class="fas fa-route"></i> Distance: <span class="value">~8-12.5 km</span></span>
+                    <span><i class="fas fa-clock"></i> Duration: <span class="value">~4 hours</span></span>
+                    <span><i class="fas fa-mountain"></i> Elevation Gain: <span class="value">~430 m</span></span>
+                    <span><i class="fas fa-tachometer-alt"></i> Difficulty: <span class="value">Moderate</span></span>
+                </div>
+                <p><strong>Description:</strong> A peaceful loop featuring a chapel in the woods (Waldkapelle/Cappella nel Bosco) and panoramic views. Suitable for those seeking a contemplative walk.</p>
+                <p><strong>Starting Point:</strong> Berghotel in Sesto.</p>
+                <p><strong>Route (example):</strong> Berghotel → Sesto village → Chapel in the Woods → Waldruhe → Monte di Mezzo (Panorama) → Return to Berghotel. Trail number parts: 4D.</p>
+                <p><strong>Highlights:</strong></p>
+                <ul>
+                    <li><strong>Chapel in the Woods (Waldkapelle):</strong> Serene, historically significant (built 1917 WW1). Restored in 1974. <sup class="note-ref" title="Ref: turn0search2">Ref</sup> <sup class="note-ref" title="Ref: turn0search13">Ref</sup></li>
+                    <li><strong>Waldruhe:</strong> "Forest peace," tranquil ambiance.</li>
+                    <li><strong>Monte di Mezzo (Panorama):</strong> Sweeping views of Sesto Dolomites (Croda Rossa, Monte Elmo).</li>
+                    <li><strong>Solitude:</strong> Less frequented trail.</li>
+                </ul>
+                 <p class="note-source">Source reference: <sup class="note-ref" title="Ref: turn0search8">Ref</sup> <sup class="note-ref" title="Ref: turn0search0">Ref</sup></p>
+            </div>
+
+            <h3>Additional Tips for Hiking from Sesto</h3>
+            <ul>
+                <li><strong>Trail Markings:</strong> Trails around Sesto are well marked with red-white-red signs and numbered routes.</li>
+                <li><strong>Best Season:</strong> Late spring to early autumn (June to September) is ideal.</li>
+                <li><strong>Transport:</strong> Shuttle buses and cable cars operate in summer to assist with access to higher elevations.</li>
+                <li><strong>Preparation:</strong> For longer hikes to Tre Cime, bring sufficient water, snacks, and weather-appropriate clothing.</li>
+            </ul>
+
+        </section>
+
+        <section id="gpx-resources">
+            <h2>GPX Resources & Navigation</h2>
+            <p>For detailed navigation, consider using Tabacco Maps (e.g., No. 010 – Dolomiti di Sesto). Local guides and websites like Drei Zinnen also offer valuable information.</p>
+            
+            <p>GPX files can be downloaded for many routes and used with GPS devices or smartphone apps.</p>
+            <a href="https://www.dolomitinordicski.com/en/regions/3-zinnen-dolomites/gpx-files-download.html?utm_source=chatgpt.com" target="_blank" rel="noopener" class="gpx-link"><i class="fas fa-download"></i> Dolomiti Nordic Ski GPX</a>
+
+            <h3>GPX Resources for Sesto to Tre Cime di Lavaredo:</h3>
+            <ul>
+                <li><strong>Komoot – Drei Zinnen Loop from Sexten (Sesto):</strong> Intermediate, ~9.57 km, ~1100 ft gain, ~3h 19m. <a href="https://www.komoot.com" target="_blank" rel="noopener" class="gpx-link"><i class="fas fa-map-marked-alt"></i> View on Komoot (example link)</a> (Note: Specific link from OCR "Komoot вЂ“ Drei Zinnen Loop from Sexten" was not a full URL)</li>
+                <li><strong>The Photo Hikes – Tre Cime di Lavaredo Hike:</strong> Detailed description, free GPX. ~10 km, 350m gain, 3-4 hours. (Search "The Photo Hikes Tre Cime")</li>
+                <li><strong>Pustertal.org – Hike around the Tre Cime di Lavaredo:</strong> GPX for 9.7 km circular hike from Auronzo hut. +393m altitude difference. Trails 101, 105, Alta Via Dolomites No. 4. (Search "Pustertal.org Tre Cime hike")</li>
+                <li><strong>Wikiloc – Tre Cime di Lavaredo Hiking Trail:</strong> User-recorded GPX tracks. (Search "Wikiloc Tre Cime di Lavaredo")</li>
+            </ul>
+
+            <h3>Interactive Maps & Other Trail Resources:</h3>
+             <ul>
+                <li><strong>AllTrails - Monte di Mezzo to Rifugio Gallo Cedrone Trail:</strong> 9.8-mile out-and-back near Sesto, challenging, ~5h 30m. <a href="https://www.alltrails.com" target="_blank" rel="noopener" class="gpx-link"><i class="fas fa-map-marked-alt"></i> View on AllTrails (example link)</a></li>
+                <li><strong>Drei Zinnen Website (drei-zinnen.info):</strong> Information on walking paths around Sesto, including Monte di Mezzo.</li>
+                <li><strong>Berghotel Sexten:</strong> Detailed descriptions of hiking routes from their location.</li>
+            </ul>
+
+            <h3>How to Use GPX Files:</h3>
+            <ol>
+                <li><strong>Download the GPX File:</strong> Click provided links or search on platforms.</li>
+                <li><strong>Import into a GPS Device or App:</strong> Use GPS devices (Garmin) or smartphone apps (Komoot, AllTrails, Gaia GPS, OsmAnd, TABACCOmapp). These platforms allow offline trail following and real-time navigation.</li>
+            </ol>
+            <p><strong>Recommended Mobile Apps:</strong> TABACCOmapp, Komoot, AllTrails.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Dolomites Hiking Guide. Information compiled from provided research report.</p>
+        <p>Traveler's notes/references indicated by <sup class="note-ref" title="Ref: example123">Ref</sup>. Always check current trail conditions and weather before hiking.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Accordion
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    button.classList.toggle('active');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        setTimeout(() => { 
+                            if (!button.classList.contains('active')) content.style.padding = '0 15px';
+                        }, 300); 
+                    } else {
+                        content.style.padding = '15px'; 
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+
+            // Mobile Nav
+            const navToggle = document.getElementById('nav-toggle');
+            const mainNavUl = document.querySelector('#main-nav ul');
+            if (navToggle && mainNavUl) {
+                navToggle.addEventListener('click', () => {
+                    mainNavUl.classList.toggle('active');
+                });
+            }
+
+            // Smooth scroll & active link highlighting
+            const navLinks = document.querySelectorAll('#main-nav ul li a');
+            const sections = document.querySelectorAll('main section');
+            const mainNavElement = document.getElementById('main-nav');
+
+            navLinks.forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        const navHeight = mainNavElement.offsetHeight;
+                        const exportOptionsHeight = document.getElementById('export-options').offsetHeight;
+                        const totalOffset = navHeight + exportOptionsHeight;
+                        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - totalOffset - 20; 
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                        
+                        if (mainNavUl.classList.contains('active')) { 
+                            mainNavUl.classList.remove('active');
+                        }
+                    }
+                });
+            });
+
+            function changeActiveLink() {
+                let index = sections.length;
+                const navHeight = mainNavElement.offsetHeight;
+                const exportOptionsHeight = document.getElementById('export-options').offsetHeight;
+                const totalOffset = navHeight + exportOptionsHeight;
+
+                while(--index && window.scrollY + totalOffset + 50 < sections[index].offsetTop) {} 
+                
+                navLinks.forEach((link) => link.classList.remove('active'));
+                if (navLinks[index]) { 
+                    navLinks[index].classList.add('active');
+                }
+            }
+            changeActiveLink();
+            window.addEventListener('scroll', changeActiveLink);
+
+            // Export functionality
+            const { jsPDF } = window.jspdf;
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+            const downloadJpgBtn = document.getElementById('downloadJpgBtn');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const mainContentArea = document.getElementById('main-content-area');
+
+            function showLoading(message = "Processing...") {
+                loadingOverlay.querySelector('p').textContent = message;
+                loadingOverlay.style.display = 'flex';
+            }
+            function hideLoading() {
+                loadingOverlay.style.display = 'none';
+            }
+
+            function openAllAccordionsForExport() {
+                const originalStates = [];
+                document.querySelectorAll('.accordion-button').forEach(button => {
+                    originalStates.push(button.classList.contains('active'));
+                    const content = button.nextElementSibling;
+                    if (!button.classList.contains('active')) {
+                        button.classList.add('active'); // Visually mark as active
+                        content.style.padding = '15px'; // Apply padding
+                        content.style.maxHeight = content.scrollHeight + "px"; // Expand
+                    }
+                });
+                return originalStates;
+            }
+
+            function restoreAccordionStatesAfterExport(originalStates) {
+                document.querySelectorAll('.accordion-button').forEach((button, index) => {
+                    const content = button.nextElementSibling;
+                    const wasOriginallyActive = originalStates[index];
+                    const isCurrentlyActive = button.classList.contains('active');
+
+                    if (wasOriginallyActive) {
+                        if (!isCurrentlyActive) { // Should be active, but isn't (unlikely path if openAll worked)
+                             button.classList.add('active');
+                             content.style.padding = '15px';
+                             content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    } else { // Should NOT be active
+                        if (isCurrentlyActive) {
+                            button.classList.remove('active');
+                            content.style.maxHeight = null;
+                            // Reset padding after transition (visual only, doesn't affect capture)
+                            setTimeout(() => { if (!button.classList.contains('active')) content.style.padding = '0 15px'; }, 300);
+                        }
+                    }
+                });
+            }
+
+            downloadPdfBtn.addEventListener('click', async () => {
+                showLoading("Preparing PDF...");
+                const originalStates = openAllAccordionsForExport();
+                
+                // Allow rendering to complete
+                await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
+
+
+                try {
+                    const canvas = await html2canvas(mainContentArea, {
+                        scale: 2, // Higher scale for better PDF quality
+                        useCORS: true,
+                        logging: false,
+                        windowHeight: mainContentArea.scrollHeight, // Ensure full height is considered
+                        scrollY: -window.scrollY // So html2canvas starts from top of element
+                    });
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG for smaller PDF
+                    const pdf = new jsPDF({
+                        orientation: 'p',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    
+                    const margin = 10; // 10mm margin
+                    const usableWidth = pdfWidth - 2 * margin;
+                    // jsPDF will calculate height to maintain aspect ratio and paginate if taller than page
+                    pdf.addImage(imgData, 'JPEG', margin, margin, usableWidth, 0, undefined, 'FAST'); 
+                    
+                    pdf.save('dolomites-guide.pdf');
+
+                } catch (error) {
+                    console.error("Error generating PDF:", error);
+                    alert("Error generating PDF. Check console for details. External resources (like icons) might cause issues if not accessible via CORS.");
+                } finally {
+                    restoreAccordionStatesAfterExport(originalStates);
+                    hideLoading();
+                }
+            });
+
+            downloadJpgBtn.addEventListener('click', async () => {
+                showLoading("Preparing JPG...");
+                const originalStates = openAllAccordionsForExport();
+                await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 100)));
+
+                try {
+                    const canvas = await html2canvas(mainContentArea, {
+                        scale: 1.5, // Adjust scale as needed for JPG
+                        useCORS: true,
+                        logging: false,
+                        windowHeight: mainContentArea.scrollHeight,
+                        scrollY: -window.scrollY
+                    });
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.85); // JPG quality
+
+                    const link = document.createElement('a');
+                    link.href = imgData;
+                    link.download = 'dolomites-guide.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                } catch (error) {
+                    console.error("Error generating JPG:", error);
+                     alert("Error generating JPG. Check console for details. External resources (like icons) might cause issues if not accessible via CORS.");
+                } finally {
+                    restoreAccordionStatesAfterExport(originalStates);
+                    hideLoading();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
